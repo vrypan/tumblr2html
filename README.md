@@ -14,7 +14,7 @@ It's still ugly, but somehow works.
 
 ## License
 
-tumblr2html is distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+tumblr2html is distributed under the MIT LICENSE.
 
 ## Who are you?
 
