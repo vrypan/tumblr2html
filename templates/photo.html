@@ -1,0 +1,25 @@
+<html>
+	<head>
+		{% if caption %}
+		<title>{{ caption|striptags }}</title>
+		{% else %}
+		<title>photo</title>
+		{% endif %}
+	</head>
+	<body>
+		<div class="post-date">{{ date }}</div>
+		{% if tags %}
+		<div class="entry-tags">tags: 
+			{% for t in tags %}<a href="{{ blog.baseURL }}/tag/{{ t }}">{{ t }}</a>
+			{% if forloop.last %} {% else %}, {% endif %}
+			{% endfor %} 
+		</div>
+		{% endif %}
+		{% for p in photos %}
+			<img src="{{ p.prev.url }}"  /><br/>
+		{% endfor %}
+
+		{{ caption|safe }}
+	</body>
+</html>
+

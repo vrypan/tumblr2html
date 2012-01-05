@@ -1,0 +1,11 @@
+<html>
+	<head>
+		<title>home</title>
+	</head>
+	<body>
+		{% for p in posts %}
+		<p>{{ p.timestamp|date:"d m y" }} <a href="posts/{{ p.id }}">{{ p.title|safe }}</a></p>
+		{% endfor %}
+	</body>
+</html>
+

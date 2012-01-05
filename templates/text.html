@@ -1,0 +1,19 @@
+<html>
+	<head>
+		<title>{{ title|striptags }}</title>
+	</head>
+	<body>
+		<h1>{{ title|safe }}</h1>
+		<div class="post-date">{{ date }}</div>
+		{% if tags %}
+		<div class="entry-tags">tags: 
+			{% for t in tags %}<a href="{{ blog.baseURL }}/tag/{{ t }}">{{ t }}</a>
+			{% if forloop.last %} {% else %}, {% endif %}
+			{% endfor %} 
+		</div>
+		{% endif %}
+
+		{{ body|safe }}
+	</body>
+</html>
+
