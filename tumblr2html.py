@@ -50,7 +50,7 @@ class tumblr2html(object):
 			self.get_blog_info()
 			return self.total_posts
 			
-	def render_text_post(self,p):
+	def render_text_post(self,p,b):
 		path = os.path.join(self.html_path, 'posts', str(p['id']) )
 		filename = os.path.join(path,'index.html')
 		if not os.path.exists(path):
@@ -62,7 +62,7 @@ class tumblr2html(object):
 		if not p['title']:
 			p['title'] = remove_html_tags(p['body'])[0:100]
 
-		context = Context(p)
+		context = Context({'post':p, 'blog':b})
 		template = loader.get_template('text.html')
 		html = template.render(context)
 		f = open(filename,'w')
@@ -70,7 +70,7 @@ class tumblr2html(object):
 		f.close()
 		print "[text]", path
 		
-	def render_photo_post(self,p):
+	def render_photo_post(self,p,b):
 		path = os.path.join(self.html_path, 'posts', str(p['id']) )
 		filename = os.path.join(path,'index.html')
 		if not os.path.exists(path):
@@ -105,7 +105,7 @@ class tumblr2html(object):
 			photo['prev'] = {'url':prev_url, 'width': prev_w, 'height':prev_h }
 			p['title'] = 'photo'
 
-		context = Context(p)
+		context = Context({'post':p, 'blog':b})
 		template = loader.get_template('photo.html')
 		html = template.render(context)
 		f = open(filename,'w')
@@ -118,13 +118,13 @@ class tumblr2html(object):
 
 		print "[photo]", path
 		
-	def render_link_post(self,p):
+	def render_link_post(self,p,b):
 		path = os.path.join(self.html_path, 'posts', str(p['id']) )
 		filename = os.path.join(path,'index.html')
 		if not os.path.exists(path):
 			os.makedirs(path)
 
-		context = Context(p)
+		context = Context({'post':p, 'blog':b})
 		template = loader.get_template('link.html')
 		html = template.render(context)
 		f = open(filename,'w')
@@ -137,13 +137,13 @@ class tumblr2html(object):
 
 		print "[link]", path
 
-	def render_quote_post(self,p):
+	def render_quote_post(self,p,b):
 		path = os.path.join(self.html_path, 'posts', str(p['id']) )
 		filename = os.path.join(path,'index.html')
 		if not os.path.exists(path):
 			os.makedirs(path)
 
-		context = Context(p)
+		context = Context({'post':p, 'blog':b})
 		template = loader.get_template('quote.html')
 		html = template.render(context)
 		f = open(filename,'w')
@@ -158,13 +158,13 @@ class tumblr2html(object):
 
 		print "[quote]", path
 
-	def render_chat_post(self,p):
+	def render_chat_post(self,p,b):
 		path = os.path.join(self.html_path, 'posts', str(p['id']) )
 		filename = os.path.join(path,'index.html')
 		if not os.path.exists(path):
 			os.makedirs(path)
 
-		context = Context(p)
+		context = Context({'post':p, 'blog':b})
 		template = loader.get_template('chat.html')
 		html = template.render(context)
 		f = open(filename,'w')
@@ -178,22 +178,28 @@ class tumblr2html(object):
 		print "[chat]", path
 
 
-	def render_post(self, p):
-		if p['type'] == 'text' :
-			self.render_text_post(p)
-		elif p['type'] == 'photo':
-			self.render_photo_post(p)
-		elif p['type'] == 'link':
-			self.render_link_post(p)
-		elif p['type'] == 'quote':
-			self.render_quote_post(p)
-		elif p['type'] == 'chat':
-			self.render_chat_post(p)
+	def render_post(self, post, blog):
+		if post['type'] == 'text' :
+			self.render_text_post(post, blog)
+		elif post['type'] == 'photo':
+			self.render_photo_post(post, blog)
+		elif post['type'] == 'link':
+			self.render_link_post(post, blog)
+		elif post['type'] == 'quote':
+			self.render_quote_post(post, blog)
+		elif post['type'] == 'chat':
+			self.render_chat_post(post, blog)
 		
 		else:
 			return
 			
-		self.index.append({'id': p['id'], 'title': p['title'], 'date':p['date'], 'timestamp':date.fromtimestamp(p['timestamp']), 'type':p['type']} )
+		self.index.append({
+			'id': post['id'], 
+			'title': post['title'], 
+			'date':post['date'], 
+			'timestamp':date.fromtimestamp(post['timestamp']), 
+			'type':post['type']
+			} )
 	
 	def render_index(self):
 		context = Context({'posts':self.index} )
@@ -210,7 +216,7 @@ class tumblr2html(object):
 		json_response = json.load(response)
 		if json_response['meta']['status'] == 200:
 			for p in json_response['response']['posts']:
-				self.render_post(p)
+				self.render_post(post=p, blog=json_response['response']['blog'])
 				self.rendered_posts = self.rendered_posts +1 
 
 	def render_posts(self):

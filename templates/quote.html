@@ -1,18 +1,27 @@
-<html>
-	<head>
-		<title>{{ text|truncatewords:10 }}</title>
-	</head>
-	<body>
-		<blockquote>{{ text }}</blockquote>
-		<p>source: {{ source|safe }}</p>
-		<div class="post-date">{{ date }}</div>
-		{% if tags %}
-		<div class="entry-tags">tags: 
-			{% for t in tags %}<a href="{{ blog.baseURL }}/tag/{{ t }}">{{ t }}</a>
-			{% if forloop.last %} {% else %}, {% endif %}
-			{% endfor %} 
-		</div>
-		{% endif %}
-	</body>
-</html>
+{% extends "base.html" %}
 
+{% block blog_title %}
+	{{ blog.title }}
+	<small>{{ blog.description|safe }}</small>
+{% endblock %}
+
+{% block page_title %}"{{ post.text|truncatewords:10 }}"{% endblock %}
+
+{% block page_header %}{{ post.text|truncatewords:10 }}{% endblock %}
+
+{% block main_content %}
+		<blockquote>{{ post.text|safe }}</blockquote>
+		--{{ post.source|safe }}
+		{{ post.body|safe }}
+{% endblock %}
+
+{% block secondary_content %}
+	<p>published: {{ post.date }}</p>
+	{% if post.tags %}
+	<div class="entry-tags">tags: 
+		{% for t in post.tags %}<a href="{{ blog.baseURL }}/tag/{{ t }}">{{ t }}</a>
+		{% if forloop.last %} {% else %}, {% endif %}
+		{% endfor %} 
+	</div>
+	{% endif %}
+{% endblock %}

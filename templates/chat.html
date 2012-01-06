@@ -1,21 +1,27 @@
-<html>
-	<head>
-		<title>{{ title|striptags }}</title>
-	</head>
-	<body>
-		<h1>{{ title|safe }}</h1>
-		<div class="post-date">{{ date }}</div>
-		{% if tags %}
-		<div class="entry-tags">tags: 
-			{% for t in tags %}<a href="{{ blog.baseURL }}/tag/{{ t }}">{{ t }}</a>
-			{% if forloop.last %} {% else %}, {% endif %}
-			{% endfor %} 
-		</div>
-		{% endif %}
-		
-		{% for l in dialogue %}
+{% extends "base.html" %}
+
+{% block blog_title %}
+	{{ blog.title }}
+	<small>{{ blog.description|safe }}</small>
+{% endblock %}
+
+{% block page_title %}{{ post.title|striptags }}{% endblock %}
+
+{% block page_header %}{{ post.title|safe }}{% endblock %}
+
+{% block main_content %}
+		{% for l in post.dialogue %}
 			<p>{{ l.label }} <i>{{l.phrase|safe}}</i></p>
 		{% endfor %}
-	</body>
-</html>
+{% endblock %}
 
+{% block secondary_content %}
+	<p>published: {{ post.date }}</p>
+	{% if post.tags %}
+	<div class="entry-tags">tags: 
+		{% for t in post.tags %}<a href="{{ blog.baseURL }}/tag/{{ t }}">{{ t }}</a>
+		{% if forloop.last %} {% else %}, {% endif %}
+		{% endfor %} 
+	</div>
+	{% endif %}
+{% endblock %}

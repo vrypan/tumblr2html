@@ -1,25 +1,30 @@
-<html>
-	<head>
-		{% if caption %}
-		<title>{{ caption|striptags }}</title>
-		{% else %}
-		<title>photo</title>
-		{% endif %}
-	</head>
-	<body>
-		<div class="post-date">{{ date }}</div>
-		{% if tags %}
-		<div class="entry-tags">tags: 
-			{% for t in tags %}<a href="{{ blog.baseURL }}/tag/{{ t }}">{{ t }}</a>
-			{% if forloop.last %} {% else %}, {% endif %}
-			{% endfor %} 
-		</div>
-		{% endif %}
-		{% for p in photos %}
-			<img src="{{ p.prev.url }}"  /><br/>
-		{% endfor %}
+{% extends "base.html" %}
 
-		{{ caption|safe }}
-	</body>
-</html>
+{% block blog_title %}
+	{{ blog.title }}
+	<small>{{ blog.description|safe }}</small>
+{% endblock %}
 
+{% block page_title %}
+{% if post.caption %}{{ post.caption|striptags }}{% else %}{{post.date}}{% endif %}
+{% endblock %}
+
+{% block page_header %}{% if post.caption %}{{ post.caption|striptags }}{% else %}{{post.date}}{% endif %}{% endblock %}
+
+{% block main_content %}
+	{% for p in post.photos %}
+		<img src="{{ p.prev.url }}"  /><br/>
+	{% endfor %}
+	{{ post.caption|safe }}
+{% endblock %}
+
+{% block secondary_content %}
+	<p>published: {{ post.date }}</p>
+	{% if post.tags %}
+	<div class="entry-tags">tags: 
+		{% for t in post.tags %}<a href="{{ blog.baseURL }}/tag/{{ t }}">{{ t }}</a>
+		{% if forloop.last %} {% else %}, {% endif %}
+		{% endfor %} 
+	</div>
+	{% endif %}
+{% endblock %}
