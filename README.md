@@ -16,6 +16,6 @@ It's still ugly, but somehow works.
 
 tumblr2html is distributed under the MIT LICENSE.
 
-## Who are you?
+## Project news & updates
 
-I'm Panayotis Vryonis and my homepage is [vrypan.net](http://vrypan.net/)
+http://blog.vrypan.net/tagged/tumblr2html

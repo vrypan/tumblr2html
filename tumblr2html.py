@@ -137,15 +137,63 @@ class tumblr2html(object):
 
 		print "[link]", path
 
+	def render_quote_post(self,p):
+		path = os.path.join(self.html_path, 'posts', str(p['id']) )
+		filename = os.path.join(path,'index.html')
+		if not os.path.exists(path):
+			os.makedirs(path)
+
+		context = Context(p)
+		template = loader.get_template('quote.html')
+		html = template.render(context)
+		f = open(filename,'w')
+		f.write(html.encode('utf-8'))
+		f.close()
+
+		f = open(os.path.join(path,'post.json'), 'w')
+		f.write(json.dumps(p))
+		f.close()
+		
+		p['title'] = 'quote'
+
+		print "[quote]", path
+
+	def render_chat_post(self,p):
+		path = os.path.join(self.html_path, 'posts', str(p['id']) )
+		filename = os.path.join(path,'index.html')
+		if not os.path.exists(path):
+			os.makedirs(path)
+
+		context = Context(p)
+		template = loader.get_template('chat.html')
+		html = template.render(context)
+		f = open(filename,'w')
+		f.write(html.encode('utf-8'))
+		f.close()
+
+		f = open(os.path.join(path,'post.json'), 'w')
+		f.write(json.dumps(p))
+		f.close()
+
+		print "[chat]", path
+
+
 	def render_post(self, p):
 		if p['type'] == 'text' :
 			self.render_text_post(p)
-		if p['type'] == 'photo':
+		elif p['type'] == 'photo':
 			self.render_photo_post(p)
-		if p['type'] == 'link':
+		elif p['type'] == 'link':
 			self.render_link_post(p)
-
-		self.index.append({'id': p['id'], 'title': p['title'], 'date':p['date'], 'timestamp':date.fromtimestamp(p['timestamp'])} )
+		elif p['type'] == 'quote':
+			self.render_quote_post(p)
+		elif p['type'] == 'chat':
+			self.render_chat_post(p)
+		
+		else:
+			return
+			
+		self.index.append({'id': p['id'], 'title': p['title'], 'date':p['date'], 'timestamp':date.fromtimestamp(p['timestamp']), 'type':p['type']} )
 	
 	def render_index(self):
 		context = Context({'posts':self.index} )
