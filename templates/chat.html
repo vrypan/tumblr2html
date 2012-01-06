@@ -1,9 +1,4 @@
-{% extends "base.html" %}
-
-{% block blog_title %}
-	{{ blog.title }}
-	<small>{{ blog.description|safe }}</small>
-{% endblock %}
+{% extends "post.html" %}
 
 {% block page_title %}{{ post.title|striptags }}{% endblock %}
 
@@ -13,15 +8,4 @@
 		{% for l in post.dialogue %}
 			<p>{{ l.label }} <i>{{l.phrase|safe}}</i></p>
 		{% endfor %}
-{% endblock %}
-
-{% block secondary_content %}
-	<p>published: {{ post.date }}</p>
-	{% if post.tags %}
-	<div class="entry-tags">tags: 
-		{% for t in post.tags %}<a href="{{ blog.baseURL }}/tag/{{ t }}">{{ t }}</a>
-		{% if forloop.last %} {% else %}, {% endif %}
-		{% endfor %} 
-	</div>
-	{% endif %}
 {% endblock %}

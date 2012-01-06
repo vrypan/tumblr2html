@@ -1,30 +1,14 @@
-{% extends "base.html" %}
-
-{% block blog_title %}
-	{{ blog.title }}
-	<small>{{ blog.description|safe }}</small>
-{% endblock %}
+{% extends "post.html" %}
 
 {% block page_title %}
-{% if post.caption %}{{ post.caption|striptags }}{% else %}{{post.date}}{% endif %}
+{% if post.caption %}{{ post.caption|striptags|truncatewords:10 }}{% else %}{{post.date}}{% endif %}
 {% endblock %}
 
-{% block page_header %}{% if post.caption %}{{ post.caption|striptags }}{% else %}{{post.date}}{% endif %}{% endblock %}
+{% block page_header %}{% if post.caption %}{{ post.caption|striptags|truncatewords:10 }}{% else %}{{post.date}}{% endif %}{% endblock %}
 
 {% block main_content %}
 	{% for p in post.photos %}
 		<img src="{{ p.prev.url }}"  /><br/>
 	{% endfor %}
 	{{ post.caption|safe }}
-{% endblock %}
-
-{% block secondary_content %}
-	<p>published: {{ post.date }}</p>
-	{% if post.tags %}
-	<div class="entry-tags">tags: 
-		{% for t in post.tags %}<a href="{{ blog.baseURL }}/tag/{{ t }}">{{ t }}</a>
-		{% if forloop.last %} {% else %}, {% endif %}
-		{% endfor %} 
-	</div>
-	{% endif %}
 {% endblock %}
