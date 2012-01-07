@@ -18,10 +18,10 @@
 	{% for p in posts %}
 	<div class="row">
 	      <div class="span1">
-	        {{ p.timestamp|date:"d|m|y" }}
+	        {% ifchanged %}{{ p.timestamp|date:"d|m|y" }}{% endifchanged %}&nbsp;
 	      </div>
 	      <div class="span9">
-			<a href="posts/{{ p.id }}">{{ p.title|safe }}</a>
+			&ndash; <a href="posts/{{ p.id }}">{{ p.title|safe }}</a>
 	      </div>
 	    </div>
 	{% endfor %}
