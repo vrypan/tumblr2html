@@ -41,6 +41,7 @@ class tumblr2html(object):
 		request_url = 'http://api.tumblr.com/v2/blog/%s/info?api_key=%s' % (self.blog, self.tumblr_api_key)
 		response = urllib.urlopen(request_url)
 		json_response = json.load(response)
+		self.blog_info = json_response['response']['blog']
 		self.total_posts = json_response['response']['blog']['posts']
 
 	def get_total_posts(self):
@@ -202,7 +203,7 @@ class tumblr2html(object):
 			} )
 	
 	def render_index(self):
-		context = Context({'posts':self.index} )
+		context = Context({'posts':self.index, 'blog': self.blog_info} )
 		template = loader.get_template('index.html')
 		html = template.render(context)
 		f = open(os.path.join(self.html_path, 'index.html'),'w')

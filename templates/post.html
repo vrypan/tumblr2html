@@ -2,7 +2,12 @@
 
 {% block blog_title %}
 	{{ blog.title }}
-	<small>{{ blog.description|safe }}</small>
+{% endblock %}
+
+{% block topnav %}
+<ul class="nav">
+  <li class="active"><a href="../../">Home</a></li>
+</ul>
 {% endblock %}
 
 {% block secondary_content %}

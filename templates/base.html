@@ -43,7 +43,6 @@
 
       /* Page header tweaks */
       .page-header {
-        background-color: #f5f5f5;
         padding: 20px 20px 10px;
         margin: -20px -20px 20px;
       }
@@ -78,10 +77,12 @@
     <div class="topbar">
       <div class="fill">
         <div class="container">
-          <a class="brand" href="#">{% block blog_title %}{% endblock %}</a>
+          <span class="brand" >{% block blog_title %}{% endblock %}</span>
+			{% block topnav %}
           <ul class="nav">
             <li class="active"><a href="#">Home</a></li>
           </ul>
+			{% endblock %}
         </div>
       </div>
     </div>
