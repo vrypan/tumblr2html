@@ -78,7 +78,8 @@ class tumblr2html(object):
 			os.makedirs(path)
 
 		for i,photo in enumerate(p['photos']):			
-			img_filename = "%s_original.jpg" % i #TODO: must set right extention!
+			extension = os.path.splitext(photo['original_size']['url'])[1][1:] # get the original file extension.
+			img_filename = "%s_original.%s" % (i, extension) 
 			img_file = os.path.join(path, img_filename)
 			remote_file = urllib2.urlopen(photo['original_size']['url'])
 			local = open(img_file,'wb')
@@ -91,7 +92,7 @@ class tumblr2html(object):
 			prev_h = 0
 
 			for alt in photo['alt_sizes']:
-				img_filename = "%s_%sx%s.jpg" % (i, alt['width'], alt['height']) #TODO: must set right extention!
+				img_filename = "%s_%sx%s.%s" % (i, alt['width'], alt['height'], extension) 
 				img_file = os.path.join(path, img_filename)
 				remote_file = urllib2.urlopen(alt['url'])
 				local = open(img_file,'wb')
