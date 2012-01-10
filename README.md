@@ -4,13 +4,14 @@ tumblr2html is an open source app that creates a static HTML copy of a tumblr bl
 
 ## Status
 
-It's still ugly, but somehow works.
+It works, but it should be considered still alpha.
 
-- Only posts of type text, link and photo are copied.
-
-- Pages are not copied.
-
-- Generated HTML is really ugly :-)
+## TODO
+-   handle answer, video and audio posts.
+-   Download pages (I can't find how to do this through the API)
+-   Pagination and archives
+-   Improve the appearance of generated HTML
+-   Incremental "backups"
 
 ## License
 
