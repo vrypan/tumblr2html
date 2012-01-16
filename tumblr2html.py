@@ -61,8 +61,21 @@ class tumblr2html(object):
 		f.close()
 
 		if not p['title']:
-			p['title'] = remove_html_tags(p['body'])[0:100]
+			p['title'] = remove_html_tags(p['body'])[0:140]
 
+		# locate any links to uploaded images, make a local copy, 
+		# and replace remote links with local
+		img_links = re.findall(r'img src=[\'"]?([^\'" ]+)', p['body'])
+		for i, img in enumerate(img_links):
+			img_extension = os.path.splitext(img)[1][1:]
+			img_filename = "img_%s.%s" % (i, img_extension) 
+			img_file = os.path.join(path, img_filename)
+			remote_file = urllib2.urlopen(img)
+			local = open(img_file,'wb')
+			local.write(remote_file.read())
+			local.close()
+			p['body'] = p['body'].replace(img,img_filename)
+		
 		context = Context({'post':p, 'blog':b})
 		template = loader.get_template('text.html')
 		html = template.render(context)
