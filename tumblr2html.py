@@ -35,6 +35,7 @@ class tumblr2html(object):
 		self.index = []
 		self.total_posts = 0
 		self.rendered_posts = 0
+		self.last_post_id = 0
 		self.get_blog_info()
 		
 	def get_blog_info(self):
@@ -89,6 +90,10 @@ class tumblr2html(object):
 		filename = os.path.join(path,'index.html')
 		if not os.path.exists(path):
 			os.makedirs(path)
+			
+		f = open(os.path.join(path,'post.json'), 'w')
+		f.write(json.dumps(p))
+		f.close()
 
 		for i,photo in enumerate(p['photos']):			
 			extension = os.path.splitext(photo['original_size']['url'])[1][1:] # get the original file extension.
@@ -127,10 +132,6 @@ class tumblr2html(object):
 		f.write(html.encode('utf-8'))
 		f.close()
 
-		f = open(os.path.join(path,'post.json'), 'w')
-		f.write(json.dumps(p))
-		f.close()
-
 		print "[photo]", path
 		
 	def render_link_post(self,p,b):
@@ -139,15 +140,15 @@ class tumblr2html(object):
 		if not os.path.exists(path):
 			os.makedirs(path)
 
+		f = open(os.path.join(path,'post.json'), 'w')
+		f.write(json.dumps(p))
+		f.close()
+
 		context = Context({'post':p, 'blog':b})
 		template = loader.get_template('link.html')
 		html = template.render(context)
 		f = open(filename,'w')
 		f.write(html.encode('utf-8'))
-		f.close()
-
-		f = open(os.path.join(path,'post.json'), 'w')
-		f.write(json.dumps(p))
 		f.close()
 
 		print "[link]", path
@@ -157,6 +158,10 @@ class tumblr2html(object):
 		filename = os.path.join(path,'index.html')
 		if not os.path.exists(path):
 			os.makedirs(path)
+			
+		f = open(os.path.join(path,'post.json'), 'w')
+		f.write(json.dumps(p))
+		f.close()
 
 		context = Context({'post':p, 'blog':b})
 		template = loader.get_template('quote.html')
@@ -165,10 +170,6 @@ class tumblr2html(object):
 		f.write(html.encode('utf-8'))
 		f.close()
 
-		f = open(os.path.join(path,'post.json'), 'w')
-		f.write(json.dumps(p))
-		f.close()
-		
 		p['title'] = 'quote'
 
 		print "[quote]", path
@@ -179,15 +180,15 @@ class tumblr2html(object):
 		if not os.path.exists(path):
 			os.makedirs(path)
 
+		f = open(os.path.join(path,'post.json'), 'w')
+		f.write(json.dumps(p))
+		f.close()
+
 		context = Context({'post':p, 'blog':b})
 		template = loader.get_template('chat.html')
 		html = template.render(context)
 		f = open(filename,'w')
 		f.write(html.encode('utf-8'))
-		f.close()
-
-		f = open(os.path.join(path,'post.json'), 'w')
-		f.write(json.dumps(p))
 		f.close()
 
 		print "[chat]", path
@@ -231,6 +232,8 @@ class tumblr2html(object):
 		json_response = json.load(response)
 		if json_response['meta']['status'] == 200:
 			for p in json_response['response']['posts']:
+				if self.last_post_id < p['id']:
+					self.last_post_id = p['id']
 				self.render_post(post=p, blog=json_response['response']['blog'])
 				self.rendered_posts = self.rendered_posts +1 
 
@@ -239,6 +242,11 @@ class tumblr2html(object):
 		for i in range(0,total,20):
 			self.render_20posts(i,20)
 		self.render_index()
+
+		data = {'last_post_id': self.last_post_id }
+		f = open(os.path.join(self.html_path,'tumblr2html.json'), 'w')
+		f.write(json.dumps(data))
+		f.close()
 
 def main():
 	t2h = tumblr2html(tumblr_api_key=TUMBLR_API_KEY, blog=BLOG, html_path=HTML_PATH)
