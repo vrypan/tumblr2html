@@ -1,7 +1,9 @@
+#! /usr/bin/env python
+
 # tumblr2html
 # Copyright 2012 Panayotis Vryonis 
 # http://vrypan.net/
-# See LICENSE for details.
+# License: MIT.
 
 import json
 import urllib
@@ -12,6 +14,7 @@ from django.template import Template, Context, loader
 from django.conf import settings
 import re
 from datetime import date
+import argparse
 
 TUMBLR_API_KEY 		= '' # set your key here. see http://www.tumblr.com/oauth/apps
 BLOG 			= '' # your tumblr blog, ex. 'blog.vrypan.net' or 'engineering.tumblr.com'
@@ -248,8 +251,25 @@ class tumblr2html(object):
 		f.write(json.dumps(data))
 		f.close()
 
-def main():
-	t2h = tumblr2html(tumblr_api_key=TUMBLR_API_KEY, blog=BLOG, html_path=HTML_PATH)
+
+def main(*argv):
+	parser = argparse.ArgumentParser(description="usage: %prog [options] filename")
+	parser.add_argument("-k", "--api_key",
+         dest="api_key",
+         help="tumblr api key. See http://www.tumblr.com/oauth/apps")
+	parser.add_argument("-b", "--blog",
+         dest="blog",
+         help="tumblr blog, ex. 'blog.vrypan.net' or 'engineering.tumblr.com'")
+	parser.add_argument("-o", "--output_path",
+         dest="path",
+         help="destination path for generated HTML")
+	args = parser.parse_args()
+	
+	if not (args.api_key and args.blog and args.path):
+		parser.print_help()
+		return 1
+		
+	t2h = tumblr2html(tumblr_api_key=args.api_key, blog=args.blog, html_path=args.path)
 	t2h.get_blog_info()
 	t2h.render_posts()
 	
