@@ -16,10 +16,6 @@ import re
 from datetime import date
 import argparse
 
-TUMBLR_API_KEY 		= '' # set your key here. see http://www.tumblr.com/oauth/apps
-BLOG 			= '' # your tumblr blog, ex. 'blog.vrypan.net' or 'engineering.tumblr.com'
-HTML_PATH 		= os.path.join('.','html') # where do you want the generated HTML files to go?
-
 settings.configure(
 		DEBUG=True,
 		TEMPLATE_DEBUG=True,
