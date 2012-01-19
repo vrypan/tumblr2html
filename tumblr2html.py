@@ -27,7 +27,12 @@ def remove_html_tags(data):
 	return p.sub('', data)
 
 class tumblr2html(object):
-	def __init__(self, tumblr_api_key, blog, html_path, incremental):
+	def __init__(self, 
+			tumblr_api_key=None, 
+			blog=None, 
+			html_path=None, 
+			cont=False, 
+			remember_api_key=False):		
 		self.tumblr_api_key = tumblr_api_key
 		self.blog = blog
 		self.html_path = html_path
@@ -35,6 +40,21 @@ class tumblr2html(object):
 		self.total_posts = 0
 		self.rendered_posts = 0
 		self.last_post_id = 0
+		self.min_id = 0
+		self.cont = cont
+		self.key_from_conf=False
+		self.remember_api_key = remember_api_key
+		
+		if cont:
+			self.get_conf()
+
+		if not self.tumblr_api_key:
+			return False
+		if not self.blog:
+			return False
+		if not self.html_path:
+			return False
+			
 		self.get_blog_info()
 		
 	def get_blog_info(self):
@@ -44,15 +64,22 @@ class tumblr2html(object):
 		self.blog_info = json_response['response']['blog']
 		self.total_posts = json_response['response']['blog']['posts']
 
-	def get_cache_info(self):
+	def get_conf(self):
 		try:
-			f = open(os.path.join(self.html_path,'tumblr2html.json'), 'r')
-			data = json.load(f.read())
-			self.cache = data
+			f = open(os.path.join(self.html_path,'.tumblr2html.json'), 'r')
+			data = json.load(f)
+			if data['blog']:
+				self.blog = data['blog']
+			if data['tumblr_api_key']:
+				self.tumblr_api_key = data['tumblr_api_key']
+				self.key_from_conf = True
+			if data['last_post_id']:
+				self.min_id = data['last_post_id']
+			if data['index']:
+				self.index = data['index']
 		except IOError:
 			pass
 		f.close()
-		
 
 	def get_total_posts(self):
 		if self.total_posts:
@@ -241,48 +268,61 @@ class tumblr2html(object):
 		json_response = json.load(response)
 		if json_response['meta']['status'] == 200:
 			for p in json_response['response']['posts']:
+				if self.cont and p['id'] <= self.min_id:
+					return False
 				if self.last_post_id < p['id']:
 					self.last_post_id = p['id']
 				self.render_post(post=p, blog=json_response['response']['blog'])
 				self.rendered_posts = self.rendered_posts +1 
+		return True
 
 	def render_posts(self):
 		total = self.get_total_posts()
 		for i in range(0,total,20):
-			self.render_20posts(i,20)
+			if not self.render_20posts(i,20):
+				break
 		self.render_index()
 
-		data = {'last_post_id': self.last_post_id }
-		f = open(os.path.join(self.html_path,'tumblr2html.json'), 'w')
+		data = {'last_post_id': self.last_post_id, 'blog':self.blog}
+		if self.remember_api_key or self.key_from_conf:
+			data['tumblr_api_key'] = self.tumblr_api_key
+		f = open(os.path.join(self.html_path,'.tumblr2html.json'), 'w')
 		f.write(json.dumps(data))
 		f.close()
 
 
 def main(*argv):
-	parser = argparse.ArgumentParser(description="usage: %prog [options] filename")
-	parser.add_argument("-k", "--api_key",
+	parser = argparse.ArgumentParser(description="usage: tumblr2html.py [options]", prefix_chars='-+')
+	parser.add_argument("-k", "--api-key",
 		dest="api_key",
 		help="tumblr api key. See http://www.tumblr.com/oauth/apps")
+	parser.add_argument("--remember-api-key",
+		dest="remember_api_key",
+		action="store_true", default=False,
+		help="remember tumblr api key defined by -k or --api-key. Key will be stored in OUTPUT-PATH/.tumblr2html.json")
 	parser.add_argument("-b", "--blog",
 		dest="blog",
 		help="tumblr blog, ex. 'blog.vrypan.net' or 'engineering.tumblr.com'")
-	parser.add_argument("-o", "--output_path",
+	parser.add_argument("-p", "--path",
 		dest="path",
 		help="destination path for generated HTML")
-	parser.add_argument("-i", "--incremental",
+	parser.add_argument("-c", "--continue",
 		action="store_true", default=False,
-		dest="incremantal",
+		dest="cont",
 		help="only download new posts since last backup [does nothing yet]")
 
 	args = parser.parse_args()
 	
-	if not (args.api_key and args.blog and args.path):
+	t2h = tumblr2html(
+		tumblr_api_key=args.api_key, 
+		blog=args.blog, 
+		html_path=args.path, 
+		cont=args.cont,
+		remember_api_key=args.remember_api_key)
+	if not t2h:
 		parser.print_help()
-		return 1
-		
-	t2h = tumblr2html(tumblr_api_key=args.api_key, blog=args.blog, html_path=args.path, incremantal=incremantal)
-	t2h.get_blog_info()
-	t2h.render_posts()
+	else:
+		t2h.render_posts()
 	
 if __name__ == '__main__':
 	main()
