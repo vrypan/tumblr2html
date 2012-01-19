@@ -27,7 +27,7 @@ def remove_html_tags(data):
 	return p.sub('', data)
 
 class tumblr2html(object):
-	def __init__(self, tumblr_api_key, blog, html_path):
+	def __init__(self, tumblr_api_key, blog, html_path, incremental):
 		self.tumblr_api_key = tumblr_api_key
 		self.blog = blog
 		self.html_path = html_path
@@ -43,6 +43,16 @@ class tumblr2html(object):
 		json_response = json.load(response)
 		self.blog_info = json_response['response']['blog']
 		self.total_posts = json_response['response']['blog']['posts']
+
+	def get_cache_info(self):
+		try:
+			f = open(os.path.join(self.html_path,'tumblr2html.json'), 'r')
+			data = json.load(f.read())
+			self.cache = data
+		except IOError:
+			pass
+		f.close()
+		
 
 	def get_total_posts(self):
 		if self.total_posts:
@@ -251,21 +261,26 @@ class tumblr2html(object):
 def main(*argv):
 	parser = argparse.ArgumentParser(description="usage: %prog [options] filename")
 	parser.add_argument("-k", "--api_key",
-         dest="api_key",
-         help="tumblr api key. See http://www.tumblr.com/oauth/apps")
+		dest="api_key",
+		help="tumblr api key. See http://www.tumblr.com/oauth/apps")
 	parser.add_argument("-b", "--blog",
-         dest="blog",
-         help="tumblr blog, ex. 'blog.vrypan.net' or 'engineering.tumblr.com'")
+		dest="blog",
+		help="tumblr blog, ex. 'blog.vrypan.net' or 'engineering.tumblr.com'")
 	parser.add_argument("-o", "--output_path",
-         dest="path",
-         help="destination path for generated HTML")
+		dest="path",
+		help="destination path for generated HTML")
+	parser.add_argument("-i", "--incremental",
+		action="store_true", default=False,
+		dest="incremantal",
+		help="only download new posts since last backup [does nothing yet]")
+
 	args = parser.parse_args()
 	
 	if not (args.api_key and args.blog and args.path):
 		parser.print_help()
 		return 1
 		
-	t2h = tumblr2html(tumblr_api_key=args.api_key, blog=args.blog, html_path=args.path)
+	t2h = tumblr2html(tumblr_api_key=args.api_key, blog=args.blog, html_path=args.path, incremantal=incremantal)
 	t2h.get_blog_info()
 	t2h.render_posts()
 	
