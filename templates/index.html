@@ -25,4 +25,23 @@
 	      </div>
 	    </div>
 	{% endfor %}
+	<div class="row">
+	      <div class="span1">
+			{% if pagination.current_page > 1 %}
+			<a href="index{{ pagination.current_page|add:"-1" }}.html">&lt; prev</a>
+			{% else %}
+			&nbsp;
+			{% endif %}
+	      </div>
+		<div class="span8">
+			&nbsp;
+		</div>
+		<div class="span1">
+			{% if pagination.current_page != pagination.total_pages %}
+			<a href="index{{ pagination.current_page|add:"1" }}.html">next &gt;</a>
+			{% else %}
+			&nbsp;
+			{% endif %}
+		</div>
+    </div>
 {% endblock %}

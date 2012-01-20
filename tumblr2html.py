@@ -15,6 +15,7 @@ from django.conf import settings
 import re
 from datetime import date
 import argparse
+import shutil
 
 settings.configure(
 		DEBUG=True,
@@ -40,22 +41,29 @@ class tumblr2html(object):
 		self.total_posts = 0
 		self.rendered_posts = 0
 		self.last_post_id = 0
-		self.min_id = 0
-		self.cont = cont
-		self.key_from_conf=False
-		self.remember_api_key = remember_api_key
+		self.min_id = 0 # Do not render posts with ID <= than this. Used when --continue is selected
+		self.cont = cont # True if --contine is selected
+		self.key_from_conf=False # Did we read the api key from local cache? 
+		self.remember_api_key = remember_api_key # Did the user ask (--remember-api-key) to store the key in local cache?
 		
 		if cont:
 			self.get_conf()
 
 		if not self.tumblr_api_key:
-			return False
+			self.init_ok = False
+			return
 		if not self.blog:
-			return False
+			self.init_ok = False
+			return
 		if not self.html_path:
-			return False
-			
+			self.init_ok = False
+			return
+		self.init_ok = True
+		
 		self.get_blog_info()
+		
+		self.ppp = 10 # posts per page
+		(self.total_pages,res) = divmod(self.total_posts, self.ppp)
 		
 	def get_blog_info(self):
 		request_url = 'http://api.tumblr.com/v2/blog/%s/info?api_key=%s' % (self.blog, self.tumblr_api_key)
@@ -253,16 +261,18 @@ class tumblr2html(object):
 			'type':post['type']
 			} )
 	
-	def render_index(self):
-		context = Context({'posts':self.index, 'blog': self.blog_info} )
+	def render_index(self, page):
+		pagination = {'total_pages':self.total_pages, 'current_page':page}
+		context = Context({'posts':self.index, 'blog': self.blog_info, 'pagination':pagination} )
 		template = loader.get_template('index.html')
 		html = template.render(context)
-		f = open(os.path.join(self.html_path, 'index.html'),'w')
+		f = open(os.path.join(self.html_path, ('index%s.html' % page) ),'w')
 		f.write(html.encode('utf-8'))
 		f.close()
-		print "[index.html]"
+		print "[index%s.html]" % page
 		
 	def render_20posts(self,offset=0, limit=20):
+		self.index = [] # reset indexXXX.html contents.
 		request_url = 'http://api.tumblr.com/v2/blog/%s/posts?api_key=%s&offset=%s&limit=%s' % (self.blog, self.tumblr_api_key, offset, limit)
 		response = urllib.urlopen(request_url)
 		json_response = json.load(response)
@@ -278,10 +288,23 @@ class tumblr2html(object):
 
 	def render_posts(self):
 		total = self.get_total_posts()
-		for i in range(0,total,20):
-			if not self.render_20posts(i,20):
-				break
-		self.render_index()
+		pages,posts_to_render = divmod(total, self.ppp)
+		
+		print "total posts=%s, pages=%s, posts_to_render=%s" % (total, pages, posts_to_render)
+		
+		# 1st time is special case. Instead of creating a page with few results, we add them to the palst page.
+		posts_to_render = posts_to_render + self.ppp 
+		offset = 0
+		
+		for page in range(pages,0,-1):
+			print "offset=%s, posts=%s, page=%s" % (offset, posts_to_render, page)
+			self.render_20posts(offset,posts_to_render)
+			self.render_index(page)
+			if page==pages:
+				# we copy the last page index file to index.html (duplicate, but provides the index.html we need :-)
+				shutil.copy2(os.path.join(self.html_path, ('index%s.html' % page)), os.path.join(self.html_path, 'index.html') )
+			offset = offset + posts_to_render
+			posts_to_render = self.ppp
 
 		data = {'last_post_id': self.last_post_id, 'blog':self.blog}
 		if self.remember_api_key or self.key_from_conf:
@@ -319,7 +342,7 @@ def main(*argv):
 		html_path=args.path, 
 		cont=args.cont,
 		remember_api_key=args.remember_api_key)
-	if not t2h:
+	if not t2h.init_ok:
 		parser.print_help()
 	else:
 		t2h.render_posts()
