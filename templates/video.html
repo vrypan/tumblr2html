@@ -1,0 +1,21 @@
+{% extends "post.html" %}
+
+{% block page_title %}{{ post.caption|striptags|truncatewords:10 }}{% endblock %}
+
+{% block page_header %}{% endblock %}
+
+{% block main_content %}
+		{% if post.local_video %}
+			<video id="my_video_1" class="video-js vjs-default-skin" controls
+			  preload="auto" width="{{ post.local_video_width }}" height="{{ post.local_video_height }}" poster="{{ post.local_poster}}"
+			  data-setup="{}">
+			  <source src="{{ post.local_video }}" type='video/mp4'>
+			</video>
+			<br/>
+			Download: <a href="{{ post.local_video }}">{{ post.local_video }}</a>
+		{% else %}
+			{{ post.player.2.embed_code|safe }}
+		{% endif %}
+		{{ post.caption|safe }}
+{% endblock %}
+

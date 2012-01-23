@@ -237,6 +237,49 @@ class tumblr2html(object):
 
 		print "[chat]", path
 
+	def render_video_post(self,p,b):
+		path = os.path.join(self.html_path, 'posts', str(p['id']) )
+		filename = os.path.join(path,'index.html')
+		if not os.path.exists(path):
+			os.makedirs(path)
+
+		f = open(os.path.join(path,'post.json'), 'w')
+		f.write(json.dumps(p))
+		f.close()
+
+		video_link = re.findall(r'(http://api\.tumblr\.com/video_file/[^\'"]+)[\'"]\,([0-9]+)\,([0-9]+)\,[\'"]poster=([^,]+)', p['player'][1]['embed_code'])
+		if video_link:
+			video_filename = "%s.mp4" % p['id'] 
+			video_file = os.path.join(path, video_filename)
+			print "Downloading %s" % video_file
+			remote_file = urllib2.urlopen(video_link[0][0])
+			local = open(video_file,'wb')
+			local.write(remote_file.read())
+			local.close()
+			
+			poster_filename = "%s.jpeg" % p['id']
+			poster_file = os.path.join(path, poster_filename)
+			print "Downloading %s" % poster_file
+			remote_file = urllib2.urlopen(urllib.unquote(video_link[0][3]))
+			local = open(poster_file,'wb')
+			local.write(remote_file.read())
+			local.close()
+			
+			p['local_video'] = video_filename
+			p['local_poster'] = poster_filename
+			p['local_video_width'] = video_link[0][1]
+			p['local_video_height'] = video_link[0][2]
+			
+		context = Context({'post':p, 'blog':b})
+		template = loader.get_template('video.html')
+		html = template.render(context)
+		f = open(filename,'w')
+		f.write(html.encode('utf-8'))
+		f.close()
+
+		p['title'] = 'video'
+
+		print "[video]", path
 
 	def render_post(self, post, blog):
 		if post['type'] == 'text' :
@@ -249,7 +292,8 @@ class tumblr2html(object):
 			self.render_quote_post(post, blog)
 		elif post['type'] == 'chat':
 			self.render_chat_post(post, blog)
-		
+		elif post['type'] == 'video':
+			self.render_video_post(post, blog)
 		else:
 			return
 			
@@ -293,7 +337,11 @@ class tumblr2html(object):
 		print "total posts=%s, pages=%s, posts_to_render=%s" % (total, pages, posts_to_render)
 		
 		# 1st time is special case. Instead of creating a page with few results, we add them to the palst page.
-		posts_to_render = posts_to_render + self.ppp 
+		if pages>0 :
+			posts_to_render = posts_to_render + self.ppp 
+		else:
+			pages=1
+			
 		offset = 0
 		
 		for page in range(pages,0,-1):
