@@ -20,7 +20,9 @@ import shutil
 settings.configure(
 		DEBUG=True,
 		TEMPLATE_DEBUG=True,
-		TEMPLATE_DIRS=('templates',)
+		TEMPLATE_DIRS=(
+			os.path.join( os.path.dirname( os.path.abspath( __file__ ) ), 'templates' ),
+			)
 		)
 		
 def remove_html_tags(data):
