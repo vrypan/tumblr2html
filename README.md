@@ -2,6 +2,11 @@
 
 tumblr2html is an open source app that creates a static HTML copy of a tumblr blog, including uploaded media (like photos).
 
+## Installation
+
+Just download the sources, and run tumblr2html.py.
+You will need to have django installed (pip install django) and a tumblr API key, get one from http://www.tumblr.com/oauth/apps
+
 ## Status
 
 It works, but it should be considered still alpha.
