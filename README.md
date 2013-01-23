@@ -24,4 +24,4 @@ tumblr2html is distributed under the MIT LICENSE.
 
 ## Project news & updates
 
-http://blog.vrypan.net/tagged/tumblr2html
+http://blog.vrypan.net/tag/tumblr2html
